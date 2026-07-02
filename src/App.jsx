@@ -107,6 +107,18 @@ function Modal({ title, onClose, wide, children }) {
         </div>
         {children}
       </div>
+
+      {showReset&&(
+        <ResetModal
+          adminPin={staff.find(s=>s.role==="Owner")?.pin||""}
+          accent="#d946a8" cardBg="#17131a"
+          onCancel={()=>setShowReset(false)}
+          onConfirm={()=>{
+            ["cosmeticsManager_v1_license","cosm_setup","cosmeticsManager_v1_license_inst"].forEach(k=>localStorage.removeItem(k));
+            setShowReset(false); window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -207,7 +219,11 @@ function ResetModal({ onConfirm, onCancel, adminPin, accent, cardBg }) {
   const [pin,  setPin]  = useState("");
   const [err,  setErr]  = useState("");
   const [step, setStep] = useState(1);
-  const check = () => { if (pin !== String(adminPin)) { setErr("Incorrect PIN."); return; } setStep(2); };
+  const check = () => {
+    if (!adminPin) { setErr("No admin PIN set yet. Complete the setup wizard first."); return; }
+    if (pin !== String(adminPin)) { setErr("Incorrect PIN. Try again."); setPin(""); return; }
+    setStep(2);
+  };
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9999, padding:20 }}>
       <div style={{ background: cardBg||"#1f2330", border:"1px solid #ef444455", borderRadius:14, padding:28, width:"min(94vw,400px)" }}>
@@ -1252,3 +1268,5 @@ export default function App() {
     </div>
   );
 }
+
+// ResetModal already defined above
